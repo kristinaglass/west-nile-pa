@@ -1,0 +1,47 @@
+---
+title: "West Nile Virus Blog Post"
+format: html
+editor: visual
+---
+
+# West Nile Virus Incidence in Pennsylvania Mosquitoes
+
+## Introduction:
+
+In 2018, Pennsylvania experienced one of it's worst West Nile Virus (WNV) outbreaks in 15 years, resulting in around 72 cases reported in humans and three deaths from the virus [1](https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/). According to the Pennsylvania Department of Environmental Protection (DEP), West Nile Virus first entered the state in 2000 and since then, multiple state departments(Department of Environmental Protection, Department of Agriculture, and Department of Health) have embarked on a joint effort to manage the mosquito population to help reduce the risk of the virus and educate the public on how to reduce their risk of infection thought Integrated Pest Management [2](https://www.dep.pa.gov/Business/ProgramIntegration/Vector-Management/Mosquitoes/Pages/default.aspx).
+
+## What is West Nile Virus?:
+
+West Nile Virus is a vector born disease that cycles itself through birds (hosts) and mosquitoes (vectors), where a bird infected by WNV from a mosquito can in turn infect an uninfected mosquito who then bites that infected bird[2](https://www.dep.pa.gov/Business/ProgramIntegration/Vector-Management/Mosquitoes/Pages/default.aspx). From there, WNV transmits itself to humans and other mammals. In Pennsylvania, the primary concern for WNV transmission in non-human animals are horses and wild game, particularly birds.
+
+## Area of Interest:
+
+Philadelphia has ranked among the top cities for both mosquito rates and WNV cases in humans
+
+\[1\](<https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/>[)\[3\](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html](https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html)). Mosquitoes season ranges from around March to late October when temperatures are warmer, typically seeing spikes in July. But due to climate change, mosquito season is lasting longer, increasing the potential for exposure to WNV. While an increase in mosquitoes does not inherently mean an increase in disease cases, investigating the link could be worthwhile.
+
+## Data:
+
+## Research Question:
+
+What is the impact of temperature and relative humidity on West Nile Virus test results in Philadelphia mosquitoes?
+
+# Analysis
+
+To begin the exploration into my analysis, I first conducted basic data manipulation including cleaning the names of the data though `janitor`, using `subset()` to to find data only within Philadelphia, and using `merge()` to combine the Philadelphia subset and the weather data. Additionally, to conduct my **t-test**, the test result values "POS" and "NEG" were converted to factors from character values using `as.factor()`. For the **time series analysis**, the "count" column, containing the counts of mosquitoes was aggregated by the date of collection column renamed to "date". `aggregate()` was used to find the sum of mosquito counts per day, since there were multiple collections documented on the same day over the testing period. For **spatial interpolation and kriging**, the entire 2018 data set was used, and since there were multiple collections taken at the same location `arrange()` and `distinct()` were used to organize the rows and keep rows with only unique values for "longitude" and "latitude."
+
+## Exploratory Plotting
+
+## Hypothesis Testing
+
+### Linear Regression Summary
+
+## Time Series Analysis
+
+## Spatial Interpolation and Kriging
+
+# Results and Conclusions
+
+# Future Analysis
+
+# References

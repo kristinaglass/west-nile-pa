@@ -3,6 +3,7 @@ title: "West Nile Virus Incidence in Pennsylvania Mosquitos"
 author: "Kristina Glass"
 output: html_document
 date: "2023-12-12"
+fig_caption: yes
 ---
 
 # West Nile Virus Incidence in Pennsylvania Mosquitoes
@@ -17,7 +18,15 @@ West Nile Virus is a vector born disease that cycles itself through birds (hosts
 
 ## Area of Interest:
 
-Philadelphia has ranked among the top cities for both mosquito rates and WNV cases in humans[1](<https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/>[)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html](https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html)). Mosquitoes season ranges from around March to late October when temperatures are warmer, typically seeing spikes in July. But due to climate change, mosquito season is lasting longer, increasing the potential for exposure to WNV. While an increase in mosquitoes does not inherently mean an increase in disease cases, investigating the link could be worthwhile.
+Philadelphia has ranked among the top cities for both mosquito rates and WNV cases in humans [1](<https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/>[)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html](https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html)). Mosquitoes season ranges from around March to late October when temperatures are warmer, typically seeing spikes in July. But due to climate change, mosquito season is lasting longer, increasing the potential for exposure to WNV. While an increase in mosquitoes does not inherently mean an increase in disease cases, investigating the link could be worthwhile.
+
+## Data:
+
+## Research Question:
+
+What is the impact of temperature and relative humidity on West Nile Virus test results in Philadelphia mosquitoes?
+
+# Analysis
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -41,7 +50,7 @@ library(gstat)
 library(automap)
 library(patchwork)
 library(viridis)
-library(tmap)
+library(knitr)
 
 options(scipen = 999) # disable scientific notation
 ```
@@ -78,6 +87,14 @@ levels(philly_merge$result)
 
 ## Hypothesis Testing
 
+Here, we conduct a hypothesis test to evaluate the relationships between Average Temperature and Relative Humidity on WNV test results in mosquitoes. Where:
+
+$$H_{0}:$$
+
+***There is no difference in WNV test results based on temperature/relative humidity***
+
+$$H_{A}:$$ ***There is a difference in WNV test results based on temperature/relative humidity***
+
 ### Average Temperature
 
 ```{r}
@@ -101,7 +118,7 @@ point_est = as.numeric(mu_negative - mu_positive)
 n1 = philly_merge %>% filter(result == "NEG") %>% count()
 n2 = philly_merge %>% filter(result == "POS") %>% count()
 s1 = philly_merge %>% filter(result == "NEG") %>% summarize(sd(avg_temp, na.rm = TRUE))
-s2 = philly#_merge %>% filter(result == "POS") %>% summarize(sd(avg_temp, na.rm = TRUE))
+s2 = philly_merge %>% filter(result == "POS") %>% summarize(sd(avg_temp, na.rm = TRUE))
 SE = as.numeric(sqrt(s1^2/n1 + s2^2/n2))
 
 #compute test statistic
@@ -178,9 +195,9 @@ print(summary(lm(avg_rel ~ result, philly_merge)))
 
 ### Average Temperature
 
-```{r}
+```{r, fig.cap = "Positive and Negative test results for West Nile Virus Cases in Philadelphia, PA in 2018. Data was collected from May 16th to October 24th"}
 #plot density distribtion of WNV Result on Avg Temp
-temp_plot<-ggplot(philly_merge, aes(x = result, y = avg_temp)) +
+ggplot(philly_merge, aes(x = result, y = avg_temp)) +
   geom_violin(fill = "steelblue") +
   geom_boxplot(width = .15, 
                fill = "darksalmon",
@@ -192,7 +209,6 @@ temp_plot<-ggplot(philly_merge, aes(x = result, y = avg_temp)) +
        x = "Test Results") +
   theme_minimal()
 
-temp_plot
 ```
 
 ### Average Relative Humidity
@@ -225,7 +241,8 @@ philadelphia_sorted %>%
   #ggplot(aes(yr_mo, count)) +
   stat_summary(geom = 'line', fun = "mean", alpha = 0.5) +
   geom_smooth(method = "lm", se = TRUE, color = 'midnightblue')+
-  labs(x='Month of Collection', y="Mosquito Counts")
+  labs(x='Month of Collection', y="Mosquito Counts",
+       title = "Distribution of Mosquito Counts Over Month by Date of Collection")
 ```
 
 ```{r}
@@ -240,7 +257,8 @@ philadelphia_sorted %>%
   ggplot(aes(yr_mo, count)) +
   stat_summary(geom = 'line', fun = "mean", alpha = 0.5) +
   geom_smooth(method = "lm", se = TRUE, color = 'midnightblue')+
-  labs(x='Month of Collection', y="Mosquito Counts")
+  labs(x='Month of Collection', y="Mosquito Counts",
+       title ="Distribution of Mosquito counts by Time Over Month")
 ```
 
 ```{r}
@@ -273,7 +291,8 @@ components(dcmp) %>%
   autoplot(count_mean, color = 'grey') + #original data
   # trend + noise
   geom_line(aes(y = trend), color = 'blue') +
-  labs(x = 'Year', y = 'Monthly Mean Temp')
+  labs(x = 'Year', y = 'Monthly Mean Temp',
+       title = "Time Series Decomposition of Mosquito Counts per Month")
 ```
 
 ## Spatial Interpolation and Kriging
@@ -283,8 +302,9 @@ components(dcmp) %>%
 data_2018 %>% 
   ggplot(mapping = aes(x = longitude, y = latitude, color = count)) +
   geom_point(size = 1, alpha = 0.5) + 
-  scale_color_viridis(option = "B") + #optional
-  theme_classic() #optional
+  scale_color_viridis(option = "B") + 
+  theme_classic() +
+labs(title = "Spatial Distribution of Mosquito Counts")
 ```
 
 ```{r}
@@ -304,7 +324,7 @@ head(pa_sf)
 v_mod_full <- automap:::autofitVariogram(count~1, pa_sf)
 
 v_mod <- v_mod_full$var_model
-head(ste)
+head(v_mod)
 ```
 
 ```{r}
@@ -314,7 +334,7 @@ plot(v_mod_full)
 ```{r}
 grd_sf <- st_make_grid(pa_sf, cellsize = .5)
 plot(grd_sf)
-#st_make_grid(polygons, cellsize = 1000, what = 'polygons') %>% st_sf()
+
 ```
 
 ```{r}
