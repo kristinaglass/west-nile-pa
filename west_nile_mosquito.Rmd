@@ -1,0 +1,351 @@
+---
+title: "West Nile Virus Incidence in Pennsylvania Mosquitos"
+author: "Kristina Glass"
+output: html_document
+date: "2023-12-12"
+---
+
+# West Nile Virus Incidence in Pennsylvania Mosquitoes
+
+## Introduction:
+
+In 2018, Pennsylvania experienced one of it's worst West Nile Virus (WNV) outbreaks in 15 years, resulting in around 72 cases reported in humans and three deaths from the virus [1](https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/). According to the Pennsylvania Department of Environmental Protection (DEP), West Nile Virus first entered the state in 2000 and since then, multiple state departments(Department of Environmental Protection, Department of Agriculture, and Department of Health) have embarked on a joint effort to manage the mosquito population to help reduce the risk of the virus and educate the public on how to reduce their risk of infection thought Integrated Pest Management [2](https://www.dep.pa.gov/Business/ProgramIntegration/Vector-Management/Mosquitoes/Pages/default.aspx).
+
+## What is West Nile Virus?:
+
+West Nile Virus is a vector born disease that cycles itself through birds (hosts) and mosquitoes (vectors), where a bird infected by WNV from a mosquito can in turn infect an uninfected mosquito who then bites that infected bird[2](https://www.dep.pa.gov/Business/ProgramIntegration/Vector-Management/Mosquitoes/Pages/default.aspx). From there, WNV transmits itself to humans and other mammals. In Pennsylvania, the primary concern for WNV transmission in non-human animals are horses and wild game, particularly birds.
+
+## Area of Interest:
+
+Philadelphia has ranked among the top cities for both mosquito rates and WNV cases in humans[1](<https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/>[)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html](https://www.publicopiniononline.com/story/news/2018/10/09/pennsylvanias-worst-outbreak-west-nile-virus-15-years/1580572002/)[3](https://www.inquirer.com/science/climate/mosquitos-climate-change-climate-central-global-warming-philadelphia-allentown-atlantic-city-zika-20200804.html)). Mosquitoes season ranges from around March to late October when temperatures are warmer, typically seeing spikes in July. But due to climate change, mosquito season is lasting longer, increasing the potential for exposure to WNV. While an increase in mosquitoes does not inherently mean an increase in disease cases, investigating the link could be worthwhile.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#load in necessary libraries
+
+library(tidyverse)
+library(readr)
+library(gt)
+library(tufte)
+library(feasts)
+library(readxl)
+library(writexl)
+library(janitor)
+library(tsibble)
+library(sf)
+library(raster)
+library(gstat)
+library(automap)
+library(patchwork)
+library(viridis)
+library(tmap)
+
+options(scipen = 999) # disable scientific notation
+```
+
+```{r}
+#load in pa mosquito data
+data_2018 <- read_excel("data/pa_mosquito_data_2018.xlsx")
+#load in philadelphia weather data
+philly_weather <- read_excel("data/faa_daily-KPHL_20180516-20181024.xlsx")
+
+#change names of weather data columns
+philly_weather <- philly_weather %>% 
+        rename("date" = "Date (EST)",
+               "avg_temp" = "Average Temp (F)",
+               "avg_rel" = "Average Relative Humidity (%)")
+
+#convert columns to lower snake case and drop na values
+data_2018<-janitor::clean_names(data_2018, "snake") %>% drop_na()
+#subset data to counties of interest
+philadelphia <- subset(data_2018, county == 'Philadelphia') 
+
+#rename philadelphia "collected" column to "date"
+philadelphia <- philadelphia %>% 
+  rename("date" = "collected")
+#merge weather data with city mosquito data
+philly_merge <- merge(philadelphia,philly_weather,by="date")
+
+#convert results "POS" and "NEG" to factors
+philly_merge$result <- as.factor(philly_merge$result)
+#confirm change
+class(philly_merge$result)
+levels(philly_merge$result)
+```
+
+## Hypothesis Testing
+
+### Average Temperature
+
+```{r}
+#Alternative Hypothesis: There is a difference in wnv result based on average temperature
+#Null Hypothesis: There is no difference in wnv result based on average temperature
+
+# compute point estimate of result mean
+
+mu_negative = philly_merge %>% 
+  filter(result == "NEG") %>% 
+  summarize(mean(avg_temp))
+
+mu_positive = philly_merge %>% 
+  filter(result == "POS") %>% 
+  summarize(mean(avg_temp))
+
+point_est = as.numeric(mu_negative - mu_positive)
+
+#compute the standard error
+
+n1 = philly_merge %>% filter(result == "NEG") %>% count()
+n2 = philly_merge %>% filter(result == "POS") %>% count()
+s1 = philly_merge %>% filter(result == "NEG") %>% summarize(sd(avg_temp, na.rm = TRUE))
+s2 = philly#_merge %>% filter(result == "POS") %>% summarize(sd(avg_temp, na.rm = TRUE))
+SE = as.numeric(sqrt(s1^2/n1 + s2^2/n2))
+
+#compute test statistic
+zscore = (point_est - 0)/SE
+print(zscore)
+
+#print(paste0("The observed difference in average temperature is [" zscore "] standard deviations bellow the mean of 0"))
+
+#compute the critical value at a 95% confidence interval
+crit_val = qnorm(0.025, lower.tail=FALSE)
+#find the upper and lower confidence intervals
+ci_lower = round(point_est - crit_val*SE, 2)
+ci_upper = round(point_est + crit_val*SE, 2)
+
+print(paste0("there is a 95% probability that [", ci_lower, " ,", ci_upper, "] contains the difference in means between WNV results"))
+```
+
+```{r}
+#conduct canned t-test to confirm manual test worked
+t.test(avg_temp ~ result, philly_merge)
+#find summary of linar model of (x) on (y)
+summary(lm(avg_temp ~ result, philly_merge))
+```
+
+### Average Relative Humidity
+
+```{r}
+#Alternative Hypothesis: There is a difference in wnv result based on average temperature
+#Null Hypothesis: There is no difference in wnv result based on average temperature
+
+# compute point estimate of result mean
+
+mu_negative2 = philly_merge %>% 
+  filter(result == "NEG") %>% 
+  summarize(mean(avg_rel))
+
+mu_positive2 = philly_merge %>% 
+  filter(result == "POS") %>% 
+  summarize(mean(avg_rel))
+
+point_est2 = as.numeric(mu_negative2 - mu_positive2)
+
+#compute the standard error
+
+n3 = philly_merge %>% filter(result == "NEG") %>% count()
+n4 = philly_merge %>% filter(result == "POS") %>% count()
+s3 = philly_merge %>% filter(result == "NEG") %>% summarize(sd(avg_rel, na.rm = TRUE))
+s4 = philly_merge %>% filter(result == "POS") %>% summarize(sd(avg_rel, na.rm = TRUE))
+SE2 = as.numeric(sqrt(s1^2/n1 + s2^2/n2))
+
+#compute test statistic
+zscore2 = (point_est2 - 0)/SE2
+print(zscore2)
+
+#print(paste0("The observed difference in average temperature is [" zscore "] standard deviations bellow the mean of 0"))
+
+#compute the critical value at a 95% confidence interval
+crit_val2 = qnorm(0.025, lower.tail=FALSE)
+#find the upper and lower confidence intervals
+ci_lower2 = round(point_est2 - crit_val2*SE2, 2)
+ci_upper2 = round(point_est2 + crit_val2*SE2, 2)
+
+print(paste0("there is a 95% probability that [", ci_lower2, " ,", ci_upper2, "] contains the difference in means between WNV results"))
+```
+
+```{r}
+#conduct canned t_test to confirm manual results are the same
+print(t.test(avg_rel ~ result, philly_merge))
+#check summary for linear model
+print(summary(lm(avg_rel ~ result, philly_merge)))
+```
+
+## Plotting Linear Model
+
+### Average Temperature
+
+```{r}
+#plot density distribtion of WNV Result on Avg Temp
+temp_plot<-ggplot(philly_merge, aes(x = result, y = avg_temp)) +
+  geom_violin(fill = "steelblue") +
+  geom_boxplot(width = .15, 
+               fill = "darksalmon",
+               outlier.color = "darksalmon",
+               outlier.size = 1,
+               outlier.alpha = 0.5) + 
+  labs(title = "West Nile Virus Test Result Distribution by Average Temp",
+       y = "Average Temp (F)",
+       x = "Test Results") +
+  theme_minimal()
+
+temp_plot
+```
+
+### Average Relative Humidity
+
+```{r}
+#plot WNV on relative humidity
+ggplot(philly_merge, aes(x = result, y = avg_rel)) +
+  geom_violin(fill = "steelblue") +
+  geom_boxplot(width = .15, 
+               fill = "darksalmon") + 
+  labs(title = "West Nile Virus Test Result Distribution by Average Relative Humidity",
+       y = "Average Relative Humidity (%)",
+       x = "Test Results")
+```
+
+## Time Series Analysis
+
+```{r}
+#aggregate count of mosquitos by date to combine overlapping dates
+philadelphia_sorted<-aggregate(count ~ date, data = philadelphia, FUN = "sum")
+
+#plot basic time series analysis by day per month of collection
+philadelphia_sorted %>% 
+  ggplot(aes(x=date, y = count)) +
+  geom_line()+ #daily plot is too hight res to see anyting
+  #mutate(
+    #yr_mo = yearmonth(date),
+    #month = month(date)
+  #) %>% 
+  #ggplot(aes(yr_mo, count)) +
+  stat_summary(geom = 'line', fun = "mean", alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = 'midnightblue')+
+  labs(x='Month of Collection', y="Mosquito Counts")
+```
+
+```{r}
+#plot basic time series by month of collection
+philadelphia_sorted %>% 
+  #ggplot(aes(x=date, y = count)) +
+  #geom_line()+ #daily plot is too hight res to see anyting
+  mutate(
+    yr_mo = yearmonth(date),
+    month = month(date)
+  ) %>% 
+  ggplot(aes(yr_mo, count)) +
+  stat_summary(geom = 'line', fun = "mean", alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = 'midnightblue')+
+  labs(x='Month of Collection', y="Mosquito Counts")
+```
+
+```{r}
+#turn dataframe into time series object
+philly_ts = philadelphia_sorted %>% 
+  mutate(yr_mo = yearmonth(date)) %>% 
+  group_by(yr_mo) %>% 
+  summarise(count_mean = mean(count, na.rm = TRUE)) %>% 
+  tsibble(index = yr_mo) 
+
+#check head of object
+philly_ts %>% head(10)            
+            
+```
+
+```{r}
+#decompose timeseries object
+dcmp <- philly_ts %>% 
+  model(STL(count_mean))
+
+#obtain the components from dcmp
+components(dcmp) %>% 
+  autoplot()
+```
+
+```{r}
+#plot components of decomposition
+components(dcmp) %>% 
+  as_tsibble() %>%  #make it a TS Table
+  autoplot(count_mean, color = 'grey') + #original data
+  # trend + noise
+  geom_line(aes(y = trend), color = 'blue') +
+  labs(x = 'Year', y = 'Monthly Mean Temp')
+```
+
+## Spatial Interpolation and Kriging
+
+```{r}
+#plot 
+data_2018 %>% 
+  ggplot(mapping = aes(x = longitude, y = latitude, color = count)) +
+  geom_point(size = 1, alpha = 0.5) + 
+  scale_color_viridis(option = "B") + #optional
+  theme_classic() #optional
+```
+
+```{r}
+pa_krig<-data_2018 %>%
+   arrange(latitude, longitude) %>%
+   distinct(latitude, longitude, .keep_all = TRUE)
+```
+
+```{r}
+pa_sf <- st_as_sf(pa_krig, coords = c("longitude", "latitude"), crs = 6565) %>% 
+  cbind(st_coordinates(.))
+
+head(pa_sf)
+```
+
+```{r}
+v_mod_full <- automap:::autofitVariogram(count~1, pa_sf)
+
+v_mod <- v_mod_full$var_model
+head(ste)
+```
+
+```{r}
+plot(v_mod_full)
+```
+
+```{r}
+grd_sf <- st_make_grid(pa_sf, cellsize = .5)
+plot(grd_sf)
+#st_make_grid(polygons, cellsize = 1000, what = 'polygons') %>% st_sf()
+```
+
+```{r}
+ok <- krige(
+  count~1,
+  pa_sf,
+  grd_sf,
+  model=v_mod)
+```
+
+```{r}
+dim(ok)
+head(ok$var1.pred)
+head(ok$var1.var)
+```
+
+```{r}
+p_raw <- ggplot(data = data_2018,
+                mapping = aes(x=longitude, y=latitude, color=count)) +
+  geom_point(size = 1) + scale_color_viridis(option = 'B') +
+  ggtitle(label = "Observation wells") +
+  theme_void()
+
+p_kriging <-  ggplot(ok, aes(x = x, y = y, fill = var1.pred)) +
+    geom_raster() +
+    ggtitle(label = "Ordinary Kriging") +
+    scale_fill_viridis(option = "B") +
+    theme_void() +
+    theme(
+      plot.title = element_text(hjust = 0.5)
+    ) + guides(fill=guide_legend(title="Z", reverse=TRUE))
+
+p_raw + p_kriging
+```
