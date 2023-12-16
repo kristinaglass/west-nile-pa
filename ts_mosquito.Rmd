@@ -1,0 +1,52 @@
+---
+title: "jbbj"
+output: html_document
+date: "2023-12-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#load in necessary libraries
+
+library(tidyverse)
+library(readr)
+library(gt)
+library(tufte)
+library(feasts)
+library(readxl)
+library(writexl)
+library(janitor)
+library(ggridges)
+library(tsibble)
+library(gginference)
+library(forecast)
+```
+
+```{r}
+all_mosquito <- read_excel("data/mosquito_data_all.xlsx")
+```
+
+```{r}
+#convert columns to lower snake case
+all_mosquito<-janitor::clean_names(all_mosquito, "snake")
+#subset data to counties of interest
+philadelphia_mosquito <- subset(all_mosquito, county == 'Philadelphia')
+```
+
+```{r}
+mosquito_sorted<-aggregate(count ~ collected, data = philadelphia_mosquito, FUN = "sum")
+
+mosquito_sorted %>% 
+  mutate(
+    yr_mo = yearmonth(collected),
+    year = year(collected)
+  ) %>% 
+  ggplot(aes(yr_mo, count)) +
+  stat_summary(geom = 'line', fun = "mean", alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = 'midnightblue')+
+  labs(x='Time of Collection', y="Daily Mosquito Counts",
+       title = "Time Series from March 15 2001 - October 29 2020")
+```
