@@ -1,6 +1,6 @@
 ---
 title: "West Nile Virus Blog Post"
-format: html
+format: pdf
 editor: visual
 ---
 
@@ -52,9 +52,9 @@ Since my primary research question is to explore if there is any relationship be
 
 A hypothesis test was conducted on both temperature and relative humidity. The results of the summary are as follows
 
-![t-test conducted on average temperature and test results](images/Screenshot 2023-12-15 162119.png)
+![t-test conducted on average temperature and test results](images/Screenshot%202023-12-15%20162119.png)
 
-![t-test conducted on average relative humidity and test results](images/Screenshot 2023-12-15 162220.png)
+![t-test conducted on average relative humidity and test results](images/Screenshot%202023-12-15%20162220.png)
 
 Based on the results of the t-test, the p-value when testing average temperature was far bellow 0.05, meaning that there is a statistically significant relationship between temperature and mosquito test results and that we cam reject the null hypothesis. However, for relative humidity, the high p-value of 0.46 means that there is not a statistically significant relationship between relative humidity and test result. From the calculated confidence interval, it shows that I am 95% confident that the impact of temperature on test results falls within the range of (-3.4, -2.4).
 
@@ -62,9 +62,9 @@ Based on the results of the t-test, the p-value when testing average temperature
 
 Following this, i conducted a linear regression on both tests to further unpack the atmospheric influence on mosquito test results.
 
-![Linear model on average temperature and test results](images/Screenshot 2023-12-15 162303.png)
+![Linear model on average temperature and test results](images/Screenshot%202023-12-15%20162303.png)
 
-![Linear model on average relative humidity and test results](images/Screenshot 2023-12-15 162349.png)
+![Linear model on average relative humidity and test results](images/Screenshot%202023-12-15%20162349.png)
 
 From the table shown above, it can be concluded that for every 1 degree increase in temperature, the positive test results will increase by 2. It also shows that at 0, the average temperature is approx. 75 degrees. It can also be concluded that for every 1% increase in relative humidity, positive test results will increase by 0.5. And that at 0, the average relative humidity is approx. 67%. The R-squared value for temperature is .066, meaning that 6% of the positive test results could be explained by average temperature. For relative humidity, the R-squared value is -0.0003, meaning that none of the test results could be explained by average relative humidity.
 
@@ -106,4 +106,4 @@ Kummer, F. (2020, August 4). *Mosquitoes arrive earlier, stay later in Philly re
 
 *Mosquitoes*. Department of Environmental Protection. (n.d.). https://www.dep.pa.gov/Business/ProgramIntegration/Vector-Management/Mosquitoes/Pages/default.aspx
 
-ssadowski\@pennlive.com, S. S. \|. (2018, August 7). *West Nile hot spots in Pa.: What\'s The risk in your county?* pennlive. https://www.pennlive.com/news/erry-2018/08/94f441765f7887/west-nile-hot-spots-in-pa-what.html
+ssadowski\@pennlive.com, S. S. \|. (2018, August 7). *West Nile hot spots in Pa.: What's The risk in your county?* pennlive. https://www.pennlive.com/news/erry-2018/08/94f441765f7887/west-nile-hot-spots-in-pa-what.html
