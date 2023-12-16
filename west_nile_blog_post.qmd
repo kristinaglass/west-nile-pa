@@ -38,9 +38,9 @@ To begin the exploration into my analysis, I first conducted basic data manipula
 
 The following plots were used to discover potential trends in the data before conducting further analysis. First, I created two violin box plots (Fig. 1 and Fig. 2) to understand the visual distribution of both temperature and relative humidity on mosquito test results. The exploration for temperature shows a potential connection between test results, however the exploration for relative humidity shows there is potentially little relation.
 
-![Fig. 1 Density of rates of positive and negative test results for West Nile Virus in Mosquitos by average temperature. Temperature data was collected as a daily average and is in Farenheit](images/temp_dist.png){width="800"}
+![Fig. 1 Density of rates of positive and negative test results for West Nile Virus in Mosquitoes by average temperature. Temperature data was collected as a daily average and is in Fahrenheit](images/temp_dist.png){width="500"}
 
-![Fig. 2 Density rates of positive and negative test results for West Nile Virus in Mosquitoes by Relative Humidity. Relative humidity was collected as a daily average and is measured in percent](images/rh_dist.png){width="800"}
+![Fig. 2 Density rates of positive and negative test results for West Nile Virus in Mosquitoes by Relative Humidity. Relative humidity was collected as a daily average and is measured in percent](images/rh_dist.png){width="500"}
 
 ## Hypothesis Testing
 
@@ -72,23 +72,23 @@ From the table shown above, it can be concluded that for every 1 degree increase
 
 Since research showed that mosquito populations within Philadelphia have been increasing over the years due to higher average temperatures with each year, I wanted to explore this relationship in addition to the analysis conducted above. I conducted a time series analysis on both Philadelphia mosquito counts in 2018 and Philadelphia mosquito counts from the entire range of the data set, 2001-2020. I initually wanted to explore the relationship between time and mosquito test results, however I had difficulty in doing so due to the test result data being binary. The following figures show my results.
 
-![Fig. 3 Time series analysis of Philadelphia Mosquito Counts by Date of Collection in 2018. The results show a downward trend in mosquito counts as they thrive in warmer temperatures seem during the spring and summer](images/ts_by_day.png){width="800"}
+![Fig. 3 Time series analysis of Philadelphia Mosquito Counts by Date of Collection in 2018. The results show a downward trend in mosquito counts as they thrive in warmer temperatures seem during the spring and summer](images/ts_by_day.png){width="500"}
 
 I first plotted a basic analysis and regression of mosquito counts over the months of May - October per day of collection. The output (Fig 3.) showed that there is a downward trend in mosquito counts by month, which is expected since mosquitoes tend to me most active during warmer months. There is also evidence of a spike in mosquito counts near the end of June.
 
 Following this, I converted the data into a time series object and conducted a decomposition, breaking the analysis down into "trend" and "noise." Since the data was only collected over a year, there was no seasonality found. The results of the decomposition are as follows.
 
-![Fig. 4 A time series decomposition of mosquito counts over May 2018 and October 2018, showing the trend in counts and remainders](images/decomp_components.png)
+![Fig. 4 A time series decomposition of mosquito counts over May 2018 and October 2018, showing the trend in counts and remainders](images/decomp_components.png){width="500"}
 
 The bars on the left side of the graph (Fig. 4) help to compare the magnitude of the cycles. The bar for trend is quite large, indicating that it likely not important in driving the mosquito counts.
 
 (Fig. 5) was produced as a result of the decomposition, plotting the adjusted data
 
-![Fig. 5 Adjusted time series analysis of mosquito counts by month of collection](images/Screenshot%202023-12-15%20155208.png)
+![Fig. 5 Adjusted time series analysis of mosquito counts by month of collection](images/Screenshot%202023-12-15%20155208.png){width="500"}
 
 The results of this analysis show a spike in mosquito counts in July followed by a sharp decreased in counts throughout the rest of the collection period. Since this analysis only looked at one year of data, I decided to look at the entire mosquito collection cycle (2021 - 2020) within Philadelphia
 
-![Fig. 6 Basic time series of mosquito counts from start of series collection (March 2001) to end of series collection (September 2020). The regression line shows a positive trend in mosquito counts over the years that has been steadily increasing since 2001.](images/full_time_series-01.png){width="800"}
+![Fig. 6 Basic time series of mosquito counts from start of series collection (March 2001) to end of series collection (September 2020). The regression line shows a positive trend in mosquito counts over the years that has been steadily increasing since 2001.](images/full_time_series-01.png){width="500"}
 
 This plot (Fig.6) shows that there is a positive trend in mosquito counts throughout the years of collection, possibly due to increases in temperature making Philadelphia a much more habitable place for mosquitoes for a longer period of time. To follow up on these results and to find if there was a significant seasonal trend in the data, I attempted a decomposition. However, due to the significant amount of gaps in time from the months of collection starting and ending at different times per year and there being several days throughout the periods where there was no collection (resulting in the error "internal NA's"), I was unable to do a deeper exploration of the time series.
 
